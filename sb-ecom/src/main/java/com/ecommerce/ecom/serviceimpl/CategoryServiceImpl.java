@@ -5,6 +5,9 @@ import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.ecom.custom_exception.APIException;
@@ -27,15 +30,21 @@ public class CategoryServiceImpl implements CategoryService {
 	private ModelMapper modelMapper;
 
 	@Override
-	public CategoryResponse getAllCategories() {
-		List<Category> categories = this.categoryRepository.findAll();
+	public CategoryResponse getAllCategories(Integer pageNumber,Integer pageSize) {
+		
+		/*Pagination logic*/
+		
+		Pageable pageData = PageRequest.of(pageNumber, pageSize);
+		Page<Category> categoryPage = this.categoryRepository.findAll(pageData);
+		List<Category> categories = categoryPage.getContent();
+		
 		if (categories.isEmpty())
 			throw new APIException("No category is present");
 
-		// Category->CategoryDTO->CategoryResponse
-		// Decoupling model from Request-Response
+		/* Category->CategoryDTO->CategoryResponse
+		 Decoupling model from Request-Response
 
-		// 1 . Category to CategoryDTO (Model to DTO)
+		1 . Category to CategoryDTO (Model to DTO)*/
 		List<CategoryDTO> categoryDTO = categories.stream()
 				.map(category -> modelMapper.map(category, CategoryDTO.class)).toList();
 

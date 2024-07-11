@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.ecom.dto.CategoryDTO;
@@ -27,8 +28,10 @@ public class CategoryController {
 	private CategoryService categoryService;
 
 	@GetMapping("/public/categories")
-	public ResponseEntity<CategoryResponse> getAllCatgeories() {
-		CategoryResponse categoryResponse = this.categoryService.getAllCategories();
+	public ResponseEntity<CategoryResponse> getAllCatgeories(
+			@RequestParam(name="pageNumber",defaultValue = "1") Integer pageNumber,
+			@RequestParam(name="pageSize", defaultValue = "10") Integer pageSize) {
+		CategoryResponse categoryResponse = this.categoryService.getAllCategories(pageNumber,pageSize);
 		return ResponseEntity.status(HttpStatus.OK).body(categoryResponse);
 	}
 	
