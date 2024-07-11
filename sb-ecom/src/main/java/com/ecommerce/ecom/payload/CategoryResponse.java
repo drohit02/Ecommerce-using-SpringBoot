@@ -15,5 +15,11 @@ import lombok.NoArgsConstructor;
 public class CategoryResponse {
 
 	private List<CategoryDTO> content = new ArrayList<>();
+	private Integer pageNumber;
+	private Integer pageSize;
+	private Long totalElements;
+	private Integer totalPages;
+	private boolean lasPage;
+	
 
 }
