@@ -3,11 +3,14 @@ package com.ecommerce.ecom.serviceimpl;
 import java.util.List;
 import java.util.Optional;
 
+import javax.swing.SortOrder;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.ecom.custom_exception.APIException;
@@ -30,11 +33,14 @@ public class CategoryServiceImpl implements CategoryService {
 	private ModelMapper modelMapper;
 
 	@Override
-	public CategoryResponse getAllCategories(Integer pageNumber, Integer pageSize) {
+	public CategoryResponse getAllCategories(Integer pageNumber, Integer pageSize,String sortBy,String sortOrder) {
 
+		Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")?
+							  Sort.by(sortBy).ascending()
+							 :Sort.by(sortBy).descending();
 		/* Pagination logic */
 
-		Pageable pageData = PageRequest.of(pageNumber, pageSize);
+		Pageable pageData = PageRequest.of(pageNumber, pageSize,sortByAndOrder);
 		Page<Category> categoryPage = this.categoryRepository.findAll(pageData);
 		List<Category> categories = categoryPage.getContent();
 
