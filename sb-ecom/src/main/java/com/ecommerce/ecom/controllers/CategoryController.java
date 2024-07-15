@@ -28,7 +28,7 @@ public class CategoryController {
 	@Autowired
 	private CategoryService categoryService;
 
-	@GetMapping("/public/categories")
+	@GetMapping("/public/categories/q")
 	public ResponseEntity<CategoryResponse> getAllCatgeories(
 			@RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER) Integer pageNumber,
 			@RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE) Integer pageSize,

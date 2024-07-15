@@ -7,6 +7,7 @@ import javax.swing.SortOrder;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,44 +29,30 @@ public class CategoryServiceImpl implements CategoryService {
 
 	@Autowired
 	private CategoryRepository categoryRepository;
-
 	@Autowired
 	private ModelMapper modelMapper;
+	@Autowired
+	private CategoryResponse categoryResponse;
 
 	@Override
-	public CategoryResponse getAllCategories(Integer pageNumber, Integer pageSize,String sortBy,String sortOrder) {
-
-		Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")?
-							  Sort.by(sortBy).ascending()
-							 :Sort.by(sortBy).descending();
+	public CategoryResponse getAllCategories(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+		Sort sortByAndOrder = sortByAndOrderMethod(sortBy, sortOrder);
 		/* Pagination logic */
-
-		Pageable pageData = PageRequest.of(pageNumber, pageSize,sortByAndOrder);
+		Pageable pageData = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
 		Page<Category> categoryPage = this.categoryRepository.findAll(pageData);
 		List<Category> categories = categoryPage.getContent();
 
 		if (categories.isEmpty())
 			throw new APIException("No category is present");
 
-		/*
-		 * Category->CategoryDTO->CategoryResponse Decoupling model from
-		 * Request-Response
-		 * 
-		 * 1 . Category to CategoryDTO (Model to DTO)
-		 */
+		
+		/*  Category->CategoryDTO->CategoryResponse Decoupling model from Request-Response
+		  1 . Category to CategoryDTO (Model to DTO)*/
 		List<CategoryDTO> categoryDTO = categories.stream()
 				.map(category -> modelMapper.map(category, CategoryDTO.class)).toList();
 
 		// 2 . CategoryDTO to CategoryResponse (DTO to Payload{i.e. Response})
-		CategoryResponse categoryResponse = new CategoryResponse();
-		
-		/*pagination metadata set here*/
-		categoryResponse.setContent(categoryDTO);
-		categoryResponse.setPageNumber(categoryPage.getNumber());
-		categoryResponse.setPageSize(categoryPage.getSize());
-		categoryResponse.setTotalElements(categoryPage.getTotalElements());
-		categoryResponse.setTotalPages(categoryPage.getTotalPages());
-		categoryResponse.setLasPage(categoryPage.isLast());
+		CategoryResponse categoryResponse = createCategoryResponse(categoryPage, categoryDTO);
 		return categoryResponse;
 	}
 
@@ -85,7 +72,6 @@ public class CategoryServiceImpl implements CategoryService {
 	public CategoryDTO deleteCategory(Long categoryId) {
 
 		Optional<Category> findCategory = this.categoryRepository.findById(categoryId);
-
 		Category savedCategory = findCategory
 				.orElseThrow(() -> new ResourceNotFoundException("Category", "categoryId", categoryId));
 
@@ -112,6 +98,27 @@ public class CategoryServiceImpl implements CategoryService {
 		Category category = this.categoryRepository.findById(categoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("Category", "categoryId", categoryId));
 		return modelMapper.map(category, CategoryDTO.class);
+	}
+
+	private CategoryResponse createCategoryResponse(Page<Category> categoryPage, List<CategoryDTO> categoryDTO) {
+
+		/* HELPER METHOD : pagination metadata set here */
+
+		categoryResponse.setContent(categoryDTO);
+		categoryResponse.setPageNumber(categoryPage.getNumber());
+		categoryResponse.setPageSize(categoryPage.getSize());
+		categoryResponse.setTotalElements(categoryPage.getTotalElements());
+		categoryResponse.setTotalPages(categoryPage.getTotalPages());
+		categoryResponse.setLasPage(categoryPage.isLast());
+
+		return categoryResponse;
+	}
+
+	private Sort sortByAndOrderMethod(String sortBy, String sortOrder) {
+		/* HELPER METHOD : Sorting Method */
+		Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending()
+				: Sort.by(sortBy).descending();
+		return sortByAndOrder;
 	}
 
 }
