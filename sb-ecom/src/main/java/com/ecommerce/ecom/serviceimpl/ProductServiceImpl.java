@@ -42,6 +42,14 @@ public class ProductServiceImpl implements ProductService {
 			throw new ResourceNotFoundException("Product list is empty");
 		return mapProductResponse(products);
 	}
+	
+	@Override
+	public ProductResponse getProductWithKeyword(String keyword) {
+		List<Product> products = this.productRepository.findAllByProductNameLikeIgnoreCase('%'+keyword+'%');
+		if(products.isEmpty())
+			throw new ResourceNotFoundException("Product with the "+keyword+" is not found!!!");
+		return mapProductResponse(products);
+	}
 
 	@Override
 	public ProductDTO addProduct(Product product, Long categoryId) {
@@ -53,6 +61,16 @@ public class ProductServiceImpl implements ProductService {
 		Product saveProduct = this.productRepository.save(product);
 		return modelMapper.map(saveProduct, ProductDTO.class);
 	}
+	
+	@Override
+	public ProductDTO updateExitingProductData(Product product, Long productId) {
+		Product savedProduct = this.productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product","productId",productId));
+		Product updatedProduct = updateProductData(savedProduct, product);
+		return modelMapper.map(updatedProduct, ProductDTO.class);
+	}
+	
+
+
 
 	/*-----------------------------------HELPER METHOD AREA-----------------------------------------*/
 
@@ -74,7 +92,15 @@ public class ProductServiceImpl implements ProductService {
 		productResponse.setProducts(productList);
 		return productResponse;
 	}
-
 	
-
+	private Product updateProductData(Product savedProduct,Product product) {
+		savedProduct.setProductName(product.getProductName());
+		savedProduct.setDescription(product.getDescription());
+		savedProduct.setPrice(product.getPrice());
+		savedProduct.setDiscount(product.getDiscount());
+		savedProduct.setQuantity(product.getQuantity());
+		savedProduct.setSpecialPrice(calculateSpeciaPrize(product));
+		Product updatedProduct = this.productRepository.save(savedProduct);
+		return updatedProduct;
+	}
 }

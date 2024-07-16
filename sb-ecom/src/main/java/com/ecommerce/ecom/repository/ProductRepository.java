@@ -12,5 +12,6 @@ import com.ecommerce.ecom.model.Product;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long>{
 	List<Product> findAllByCategory(Category category);
+	List<Product> findAllByProductNameLikeIgnoreCase(String keyword);
 
 }
