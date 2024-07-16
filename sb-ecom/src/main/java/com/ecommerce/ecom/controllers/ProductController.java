@@ -1,8 +1,5 @@
 package com.ecommerce.ecom.controllers;
 
-import java.util.List;
-
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +20,17 @@ import com.ecommerce.ecom.service.ProductService;
 public class ProductController {
 
 	@Autowired private ProductService productService;
-	@Autowired private ModelMapper modelMapper;
 	
 	
 	@GetMapping("/public/products")
 	public ResponseEntity<ProductResponse> findAllProducts() {
-		System.out.println("Into the controller");
 		ProductResponse products = this.productService.getAllProducts();
+		return new ResponseEntity<>(products,HttpStatus.OK);
+	}
+	
+	@GetMapping("/public/categories/{categoryId}/product")
+	public ResponseEntity<ProductResponse> findProductByCategoryId(@PathVariable Long categoryId) {
+		ProductResponse products  = this.productService.getProductWithCategoryId(categoryId);
 		return new ResponseEntity<>(products,HttpStatus.OK);
 	}
 	

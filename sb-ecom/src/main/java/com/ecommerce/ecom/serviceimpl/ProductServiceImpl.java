@@ -1,6 +1,5 @@
 package com.ecommerce.ecom.serviceimpl;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
@@ -28,12 +27,22 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public ProductResponse getAllProducts() {
+
 		List<Product> products = this.productRepository.findAll();
-		if(products.isEmpty())
-			throw new ResourceNotFoundException("Product","product-list is","empty");
+		if (products.isEmpty())
+			throw new ResourceNotFoundException("Product List is empty");
 		return mapProductResponse(products);
 	}
 	
+	@Override
+	public ProductResponse getProductWithCategoryId(Long categoryId) {
+		Category category = this.categoryRepository.findById(categoryId).orElseThrow(()->new ResourceNotFoundException("Category","categoryId",categoryId));
+		List<Product> products= this.productRepository.findAllByCategory(category);
+		if (products.isEmpty())
+			throw new ResourceNotFoundException("Product list is empty");
+		return mapProductResponse(products);
+	}
+
 	@Override
 	public ProductDTO addProduct(Product product, Long categoryId) {
 		Category category = findCategoryById(categoryId);
@@ -65,5 +74,7 @@ public class ProductServiceImpl implements ProductService {
 		productResponse.setProducts(productList);
 		return productResponse;
 	}
+
+	
 
 }
