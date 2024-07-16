@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.ecom.config.AppConstants;
 import com.ecommerce.ecom.dto.CategoryDTO;
-import com.ecommerce.ecom.model.Category;
 import com.ecommerce.ecom.payload.CategoryResponse;
 import com.ecommerce.ecom.service.CategoryService;
 

@@ -1,8 +1,15 @@
 package com.ecommerce.ecom.service;
 
-import org.springframework.stereotype.Service;
+import java.util.List;
 
-@Service
+import com.ecommerce.ecom.dto.ProductDTO;
+import com.ecommerce.ecom.model.Product;
+import com.ecommerce.ecom.payload.ProductResponse;
+
 public interface ProductService {
+
+	ProductDTO addProduct(Product product, Long categoryId);
+
+	ProductResponse getAllProducts();
 
 }

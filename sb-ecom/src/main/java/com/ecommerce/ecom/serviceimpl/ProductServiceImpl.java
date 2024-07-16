@@ -1,10 +1,69 @@
 package com.ecommerce.ecom.serviceimpl;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ecommerce.ecom.custom_exception.ResourceNotFoundException;
+import com.ecommerce.ecom.dto.ProductDTO;
+import com.ecommerce.ecom.model.Category;
+import com.ecommerce.ecom.model.Product;
+import com.ecommerce.ecom.payload.ProductResponse;
+import com.ecommerce.ecom.repository.CategoryRepository;
+import com.ecommerce.ecom.repository.ProductRepository;
 import com.ecommerce.ecom.service.ProductService;
 
 @Service
-public class ProductServiceImpl implements ProductService{
+public class ProductServiceImpl implements ProductService {
+
+	@Autowired
+	private ProductRepository productRepository;
+	@Autowired
+	private ModelMapper modelMapper;
+	@Autowired
+	private CategoryRepository categoryRepository;
+
+	@Override
+	public ProductResponse getAllProducts() {
+		List<Product> products = this.productRepository.findAll();
+		if(products.isEmpty())
+			throw new ResourceNotFoundException("Product","product-list is","empty");
+		return mapProductResponse(products);
+	}
+	
+	@Override
+	public ProductDTO addProduct(Product product, Long categoryId) {
+		Category category = findCategoryById(categoryId);
+
+		product.setCategory(category);
+		product.setSpecialPrice(calculateSpeciaPrize(product));
+		product.setImage("default.png");
+		Product saveProduct = this.productRepository.save(product);
+		return modelMapper.map(saveProduct, ProductDTO.class);
+	}
+
+	/*-----------------------------------HELPER METHOD AREA-----------------------------------------*/
+
+	private Category findCategoryById(Long categoryId) {
+		Category category = this.categoryRepository.findById(categoryId)
+				.orElseThrow(() -> new ResourceNotFoundException("Category", "categoryId", categoryId));
+		return category;
+	}
+
+	private double calculateSpeciaPrize(Product product) {
+		double specialPrize = product.getPrice() - (product.getDiscount() * 0.01) * product.getPrice();
+		return specialPrize;
+	}
+
+	private ProductResponse mapProductResponse(List<Product> products) {
+		List<ProductDTO> productList = products.stream().map(product -> modelMapper.map(product, ProductDTO.class))
+				.toList();
+		ProductResponse productResponse = modelMapper.map(productList, ProductResponse.class);
+		productResponse.setProducts(productList);
+		return productResponse;
+	}
 
 }

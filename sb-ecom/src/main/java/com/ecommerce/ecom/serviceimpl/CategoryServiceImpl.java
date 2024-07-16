@@ -3,11 +3,8 @@ package com.ecommerce.ecom.serviceimpl;
 import java.util.List;
 import java.util.Optional;
 
-import javax.swing.SortOrder;
-
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -45,7 +42,6 @@ public class CategoryServiceImpl implements CategoryService {
 		if (categories.isEmpty())
 			throw new APIException("No category is present");
 
-		
 		/*  Category->CategoryDTO->CategoryResponse Decoupling model from Request-Response
 		  1 . Category to CategoryDTO (Model to DTO)*/
 		List<CategoryDTO> categoryDTO = categories.stream()

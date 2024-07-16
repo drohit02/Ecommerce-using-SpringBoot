@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -15,8 +14,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.ecommerce.ecom.custom_error_response.ErrorResponse;
 import com.ecommerce.ecom.custom_exception.APIException;
 import com.ecommerce.ecom.custom_exception.ResourceNotFoundException;
-
-import jakarta.annotation.Resource;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
