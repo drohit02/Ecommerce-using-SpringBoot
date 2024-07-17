@@ -1,8 +1,12 @@
 package com.ecommerce.ecom.controllers;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,9 +14,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.service.annotation.DeleteExchange;
-import org.springframework.web.service.annotation.PutExchange;
 
+import com.ecommerce.ecom.custom_error_response.ProductRemovalResponse;
 import com.ecommerce.ecom.dto.ProductDTO;
 import com.ecommerce.ecom.model.Product;
 import com.ecommerce.ecom.payload.ProductResponse;
@@ -55,9 +58,10 @@ public class ProductController {
 		return new ResponseEntity<ProductDTO>(updatedProductDTO,HttpStatus.OK);
 	}
 	
-	@DeleteExchange("/admin/product/productId/{productId}")
-	public ResponseEntity<String> removeProductById(@PathVariable Long productId){
-	  String status	= this.productService.deleteProductBy(productId);
-	  return new ResponseEntity<String>(status,HttpStatus.OK);
+	@DeleteMapping("/admin/product/productId/{productId}")
+	public ResponseEntity<ProductRemovalResponse> removeProductById(@PathVariable Long productId){
+	  ProductDTO productDTO	= this.productService.deleteProductById(productId);
+	  ProductRemovalResponse deleteStatus = new ProductRemovalResponse(productDTO,"This product removed successfully!!!");
+	  return new ResponseEntity<>(deleteStatus,HttpStatus.OK);
 	}
 }
