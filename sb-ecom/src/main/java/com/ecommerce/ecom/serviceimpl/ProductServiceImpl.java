@@ -70,6 +70,12 @@ public class ProductServiceImpl implements ProductService {
 	}
 	
 
+	@Override
+	public String deleteProductBy(Long productId) {
+		Product product = this.productRepository.findById(productId).orElseThrow(()-> new ResourceNotFoundException("Product","Productid",productId));
+		this.productRepository.deleteById(product.getProductId());
+		return "Product Removed Successfully";
+	}
 
 
 	/*-----------------------------------HELPER METHOD AREA-----------------------------------------*/
@@ -103,4 +109,6 @@ public class ProductServiceImpl implements ProductService {
 		Product updatedProduct = this.productRepository.save(savedProduct);
 		return updatedProduct;
 	}
+
+	
 }

@@ -18,4 +18,6 @@ public interface ProductService {
 
 	ProductDTO updateExitingProductData(Product product, Long productId);
 
+	String deleteProductBy(Long productId);
+
 }

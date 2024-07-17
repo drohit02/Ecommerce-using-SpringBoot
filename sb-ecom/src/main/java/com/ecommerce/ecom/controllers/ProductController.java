@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.service.annotation.DeleteExchange;
 import org.springframework.web.service.annotation.PutExchange;
 
 import com.ecommerce.ecom.dto.ProductDTO;
@@ -54,4 +55,9 @@ public class ProductController {
 		return new ResponseEntity<ProductDTO>(updatedProductDTO,HttpStatus.OK);
 	}
 	
+	@DeleteExchange("/admin/product/productId/{productId}")
+	public ResponseEntity<String> removeProductById(@PathVariable Long productId){
+	  String status	= this.productService.deleteProductBy(productId);
+	  return new ResponseEntity<String>(status,HttpStatus.OK);
+	}
 }
