@@ -52,21 +52,23 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public ProductDTO addProduct(Product product, Long categoryId) {
+	public ProductDTO addProduct(ProductDTO productDTO, Long categoryId) {
 		Category category = findCategoryById(categoryId);
-
+		Product product = productDtoToProduct(productDTO);
+		
 		product.setCategory(category);
 		product.setSpecialPrice(calculateSpeciaPrize(product));
 		product.setImage("default.png");
 		Product saveProduct = this.productRepository.save(product);
-		return modelMapper.map(saveProduct, ProductDTO.class);
+		
+		return productToProductDTO(saveProduct);
 	}
 	
 	@Override
-	public ProductDTO updateExitingProductData(Product product, Long productId) {
+	public ProductDTO updateExitingProductData(ProductDTO productDTO, Long productId) {
 		Product savedProduct = this.productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product","productId",productId));
-		Product updatedProduct = updateProductData(savedProduct, product);
-		return modelMapper.map(updatedProduct, ProductDTO.class);
+		Product updatedProduct = updateProductData(savedProduct, productDtoToProduct(productDTO));
+		return productToProductDTO(updatedProduct);
 	}
 	
 
@@ -74,7 +76,7 @@ public class ProductServiceImpl implements ProductService {
 	public ProductDTO deleteProductById(Long productId) {
 		Product product = this.productRepository.findById(productId).orElseThrow(()-> new ResourceNotFoundException("Product","Productid",productId));
 		this.productRepository.deleteById(product.getProductId());
-		return modelMapper.map(product, ProductDTO.class);
+		return productToProductDTO(product);
 	}
 
 
@@ -108,6 +110,13 @@ public class ProductServiceImpl implements ProductService {
 		savedProduct.setSpecialPrice(calculateSpeciaPrize(product));
 		Product updatedProduct = this.productRepository.save(savedProduct);
 		return updatedProduct;
+	}
+	
+	private ProductDTO productToProductDTO(Product product) {
+		return modelMapper.map(product, ProductDTO.class);
+	}
+	private Product productDtoToProduct(ProductDTO productDTO) {
+		return modelMapper.map(productDTO, Product.class);
 	}
 
 	

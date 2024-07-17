@@ -1,8 +1,5 @@
 package com.ecommerce.ecom.controllers;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.ecom.custom_error_response.ProductRemovalResponse;
 import com.ecommerce.ecom.dto.ProductDTO;
-import com.ecommerce.ecom.model.Product;
 import com.ecommerce.ecom.payload.ProductResponse;
 import com.ecommerce.ecom.service.ProductService;
 
@@ -47,18 +43,18 @@ public class ProductController {
 	}
 	
 	@PostMapping("/admin/categories/{categoryId}/product")
-	public ResponseEntity<ProductDTO> addProduct(@RequestBody Product product,@PathVariable Long categoryId){
-		ProductDTO productDTO = this.productService.addProduct(product,categoryId);
-		return new ResponseEntity<ProductDTO>(productDTO,HttpStatus.CREATED);
+	public ResponseEntity<ProductDTO> addProduct(@RequestBody ProductDTO productDTO,@PathVariable Long categoryId){
+		ProductDTO savedProductDTO = this.productService.addProduct(productDTO,categoryId);
+		return new ResponseEntity<ProductDTO>(savedProductDTO,HttpStatus.CREATED);
 	}
 	
-	@PutMapping("/admin/product/productId/{productId}")
-	public ResponseEntity<ProductDTO> updateProductData(@RequestBody Product product,@PathVariable Long productId){
-		ProductDTO updatedProductDTO = this.productService.updateExitingProductData(product,productId);	
+	@PutMapping("/admin/product/{productId}")
+	public ResponseEntity<ProductDTO> updateProductData(@RequestBody ProductDTO productDTO,@PathVariable Long productId){
+		ProductDTO updatedProductDTO = this.productService.updateExitingProductData(productDTO,productId);	
 		return new ResponseEntity<ProductDTO>(updatedProductDTO,HttpStatus.OK);
 	}
 	
-	@DeleteMapping("/admin/product/productId/{productId}")
+	@DeleteMapping("/admin/product/{productId}")
 	public ResponseEntity<ProductRemovalResponse> removeProductById(@PathVariable Long productId){
 	  ProductDTO productDTO	= this.productService.deleteProductById(productId);
 	  ProductRemovalResponse deleteStatus = new ProductRemovalResponse(productDTO,"This product removed successfully!!!");

@@ -1,14 +1,11 @@
 package com.ecommerce.ecom.service;
 
-import java.util.List;
-
 import com.ecommerce.ecom.dto.ProductDTO;
-import com.ecommerce.ecom.model.Product;
 import com.ecommerce.ecom.payload.ProductResponse;
 
 public interface ProductService {
 
-	ProductDTO addProduct(Product product, Long categoryId);
+	ProductDTO addProduct(ProductDTO productDTO, Long categoryId);
 
 	ProductResponse getAllProducts();
 
@@ -16,7 +13,7 @@ public interface ProductService {
 
 	ProductResponse getProductWithKeyword(String keyword);
 
-	ProductDTO updateExitingProductData(Product product, Long productId);
+	ProductDTO updateExitingProductData(ProductDTO productDTO, Long productId);
 
 	ProductDTO deleteProductById(Long productId);
 
