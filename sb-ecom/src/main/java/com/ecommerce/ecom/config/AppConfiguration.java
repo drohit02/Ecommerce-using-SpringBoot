@@ -9,15 +9,15 @@ import com.ecommerce.ecom.payload.CategoryResponse;
 
 @Configuration
 public class AppConfiguration {
-	
-	@Bean
-	public ModelMapper modelMapper() {
+
+    @Bean
+    ModelMapper modelMapper() {
 		return new ModelMapper();
 	}
-	
-	@Bean
-	@Scope("prototype")
-	public CategoryResponse categoryResponse() {
+
+    @Bean
+    @Scope("prototype")
+    CategoryResponse categoryResponse() {
 		return new CategoryResponse();
 	}
 

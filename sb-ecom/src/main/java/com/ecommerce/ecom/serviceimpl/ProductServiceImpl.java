@@ -6,6 +6,10 @@ import java.util.List;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,9 +44,18 @@ public class ProductServiceImpl implements ProductService {
 	String path;
 
 	@Override
-	public ProductResponse getAllProducts() {
+	public ProductResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+		
+		/* Sorting logic*/
+		Sort sortByAndOrder = sortProducts(sortBy, sortOrder);	
 
-		List<Product> products = this.productRepository.findAll();
+		/*Pagination Logic*/
+		
+		Pageable pages = PageRequest.of(pageNumber, pageSize,sortByAndOrder);
+		Page<Product> productPages = this.productRepository.findAll(pages);
+		
+		List<Product> products = productPages.getContent();
+		
 		if (products.isEmpty())
 			throw new ResourceNotFoundException("Product List is empty");
 		return mapProductResponse(products);
@@ -171,6 +184,14 @@ public class ProductServiceImpl implements ProductService {
 			}
 		}
 		return isFound;
+	}
+	
+	private Sort sortProducts(String sortBy,String sortOrder) {
+		Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc") ?
+				Sort.by(sortBy).ascending() : 
+				Sort.by(sortBy).descending();
+		return sortByAndOrder;
+		
 	}
 
 }

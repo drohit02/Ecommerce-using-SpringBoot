@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ecommerce.ecom.config.AppConstants;
 import com.ecommerce.ecom.custom_error_response.ProductRemovalResponse;
 import com.ecommerce.ecom.dto.ProductDTO;
 import com.ecommerce.ecom.payload.ProductResponse;
@@ -31,8 +32,13 @@ public class ProductController {
 	
 	
 	@GetMapping("/public/products")
-	public ResponseEntity<ProductResponse> findAllProducts() {
-		ProductResponse products = this.productService.getAllProducts();
+	public ResponseEntity<ProductResponse> findAllProducts(
+			@RequestParam(defaultValue = AppConstants.PAGE_NUMBER) Integer pageNumber,
+			@RequestParam(defaultValue = AppConstants.PAGE_SIZE) Integer pageSize,
+			@RequestParam(defaultValue = AppConstants.SORT_PRODUCT_BY) String sortBy,
+			@RequestParam(defaultValue = AppConstants.SORT_ORDER) String sortOrder
+			) {
+		ProductResponse products = this.productService.getAllProducts(pageNumber,pageSize,sortBy,sortOrder);
 		return new ResponseEntity<>(products,HttpStatus.OK);
 	}
 	
