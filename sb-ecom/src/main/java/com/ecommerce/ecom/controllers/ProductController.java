@@ -33,24 +33,34 @@ public class ProductController {
 	
 	@GetMapping("/public/products")
 	public ResponseEntity<ProductResponse> findAllProducts(
-			@RequestParam(defaultValue = AppConstants.PAGE_NUMBER) Integer pageNumber,
-			@RequestParam(defaultValue = AppConstants.PAGE_SIZE) Integer pageSize,
-			@RequestParam(defaultValue = AppConstants.SORT_PRODUCT_BY) String sortBy,
-			@RequestParam(defaultValue = AppConstants.SORT_ORDER) String sortOrder
+			@RequestParam(name = "pageNumber",defaultValue = AppConstants.PAGE_NUMBER) Integer pageNumber,
+			@RequestParam(name = "pageSize",defaultValue = AppConstants.PAGE_SIZE) Integer pageSize,
+			@RequestParam(name = "sortBy",defaultValue = AppConstants.SORT_PRODUCT_BY) String sortBy,
+			@RequestParam(name = "sortOrderr",defaultValue = AppConstants.SORT_ORDER) String sortOrder
 			) {
 		ProductResponse products = this.productService.getAllProducts(pageNumber,pageSize,sortBy,sortOrder);
 		return new ResponseEntity<>(products,HttpStatus.OK);
 	}
 	
 	@GetMapping("/public/categories/{categoryId}/product")
-	public ResponseEntity<ProductResponse> findProductByCategoryId(@PathVariable Long categoryId) {
-		ProductResponse products  = this.productService.getProductWithCategoryId(categoryId);
+	public ResponseEntity<ProductResponse> findProductByCategoryId(@PathVariable Long categoryId,
+			@RequestParam(name = "pageNumber",defaultValue = AppConstants.PAGE_NUMBER) Integer pageNumber,
+			@RequestParam(name = "pageSize",defaultValue = AppConstants.PAGE_SIZE) Integer pageSize,
+			@RequestParam(name = "sortBy",defaultValue = AppConstants.SORT_PRODUCT_BY) String sortBy,
+			@RequestParam(name = "sortOrderr",defaultValue = AppConstants.SORT_ORDER) String sortOrder
+			) {
+		ProductResponse products  = this.productService.getProductWithCategoryId(categoryId,pageNumber,pageSize,sortBy,sortOrder);
 		return new ResponseEntity<>(products,HttpStatus.OK);
 	}
 	
 	@GetMapping("/public/products/keyword/{keyword}")
-	public ResponseEntity<ProductResponse> findProductsWithKeyword(@PathVariable String keyword) {
-		ProductResponse productResponse  = this.productService.getProductWithKeyword(keyword);
+	public ResponseEntity<ProductResponse> findProductsWithKeyword(@PathVariable String keyword,
+			@RequestParam(name = "pageNumber",defaultValue = AppConstants.PAGE_NUMBER) Integer pageNumber,
+			@RequestParam(name = "pageSize",defaultValue = AppConstants.PAGE_SIZE) Integer pageSize,
+			@RequestParam(name = "sortBy",defaultValue = AppConstants.SORT_PRODUCT_BY) String sortBy,
+			@RequestParam(name = "sortOrderr",defaultValue = AppConstants.SORT_ORDER) String sortOrder
+			) {
+		ProductResponse productResponse  = this.productService.getProductWithKeyword(keyword,pageNumber,pageSize,sortBy,sortOrder);
 		return new ResponseEntity<>(productResponse,HttpStatus.OK);
 	}
 	

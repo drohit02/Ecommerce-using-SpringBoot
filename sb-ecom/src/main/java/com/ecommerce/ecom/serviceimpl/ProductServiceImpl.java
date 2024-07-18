@@ -45,38 +45,58 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public ProductResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
-		
-		/* Sorting logic*/
-		Sort sortByAndOrder = sortProducts(sortBy, sortOrder);	
 
-		/*Pagination Logic*/
-		
-		Pageable pages = PageRequest.of(pageNumber, pageSize,sortByAndOrder);
+		/* Sorting logic */
+		Sort sortByAndOrder = sortProducts(sortBy, sortOrder);
+
+		/* Pagination Logic */
+
+		Pageable pages = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
 		Page<Product> productPages = this.productRepository.findAll(pages);
-		
+
 		List<Product> products = productPages.getContent();
-		
+
 		if (products.isEmpty())
 			throw new ResourceNotFoundException("Product List is empty");
-		return mapProductResponse(products);
+
+		ProductResponse productResponse = mapProductResponse(products);
+
+		return setProductResponseMetaData(productPages, productResponse);
 	}
 
 	@Override
-	public ProductResponse getProductWithCategoryId(Long categoryId) {
+	public ProductResponse getProductWithCategoryId(Long categoryId, Integer pageNumber, Integer pageSize,
+			String sortBy, String sortOrder) {
 		Category category = this.categoryRepository.findById(categoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("Category", "categoryId", categoryId));
-		List<Product> products = this.productRepository.findAllByCategory(category);
+
+		Sort sortByAndOrder = sortProducts(sortBy, sortOrder);
+
+		Pageable pageData = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
+		Page<Product> productPages = this.productRepository.findAllByCategoryOrderByPriceAsc(category, pageData);
+
+		List<Product> products = productPages.getContent();
 		if (products.isEmpty())
 			throw new APIException("Product list is empty");
-		return mapProductResponse(products);
+
+		ProductResponse productResponse = mapProductResponse(products);
+
+		return setProductResponseMetaData(productPages, productResponse);
 	}
 
 	@Override
-	public ProductResponse getProductWithKeyword(String keyword) {
-		List<Product> products = this.productRepository.findAllByProductNameLikeIgnoreCase('%' + keyword + '%');
+	public ProductResponse getProductWithKeyword(String keyword, Integer pageNumber, Integer pageSize, String sortBy,
+			String sortOrder) {
+		Sort sortByAndOrder = sortProducts(sortBy, sortOrder);
+
+		Pageable pageData = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
+		Page<Product> productPages = this.productRepository.findAllByProductNameLikeIgnoreCase('%' + keyword + '%',pageData);
+
+		List<Product> products = productPages.getContent();
 		if (products.isEmpty())
 			throw new APIException("Product with the " + keyword + " is not found!!!");
-		return mapProductResponse(products);
+		ProductResponse productResponse =  mapProductResponse(products);
+		return setProductResponseMetaData(productPages, productResponse);
 	}
 
 	@Override
@@ -84,7 +104,7 @@ public class ProductServiceImpl implements ProductService {
 		Category category = findCategoryById(categoryId);
 
 		boolean productPresent = isProductPresent(category.getProducts(), productDTO.getProductName());
-		
+
 		if (productPresent) {
 			Product product = productDtoToProduct(productDTO);
 
@@ -185,13 +205,23 @@ public class ProductServiceImpl implements ProductService {
 		}
 		return isFound;
 	}
-	
-	private Sort sortProducts(String sortBy,String sortOrder) {
-		Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc") ?
-				Sort.by(sortBy).ascending() : 
-				Sort.by(sortBy).descending();
+
+	private Sort sortProducts(String sortBy, String sortOrder) {
+		Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending()
+				: Sort.by(sortBy).descending();
 		return sortByAndOrder;
-		
+
+	}
+
+	private ProductResponse setProductResponseMetaData(Page<Product> pageMetaData, ProductResponse productResponse) {
+		ProductResponse returnProductResponse = new ProductResponse();
+		returnProductResponse.setProducts(productResponse.getProducts());
+		returnProductResponse.setPageNumber(pageMetaData.getNumber());
+		returnProductResponse.setPageSize(pageMetaData.getSize());
+		returnProductResponse.setTotalElements(pageMetaData.getTotalElements());
+		returnProductResponse.setTotalPages(pageMetaData.getTotalPages());
+		returnProductResponse.setLastPage(pageMetaData.isLast());
+		return returnProductResponse;
 	}
 
 }
