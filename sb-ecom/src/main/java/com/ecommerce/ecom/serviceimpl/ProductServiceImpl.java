@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,6 +20,7 @@ import com.ecommerce.ecom.model.Product;
 import com.ecommerce.ecom.payload.ProductResponse;
 import com.ecommerce.ecom.repository.CategoryRepository;
 import com.ecommerce.ecom.repository.ProductRepository;
+import com.ecommerce.ecom.service.FileService;
 import com.ecommerce.ecom.service.ProductService;
 
 @Service
@@ -30,6 +32,12 @@ public class ProductServiceImpl implements ProductService {
 	private ModelMapper modelMapper;
 	@Autowired
 	private CategoryRepository categoryRepository;
+	@Autowired
+	private FileService fileService;
+	
+	/* locate the path for the upload image and fetching the value from application.properties */
+	@Value("${project.image}")
+	String path;
 
 	@Override
 	public ProductResponse getAllProducts() {
@@ -91,11 +99,8 @@ public class ProductServiceImpl implements ProductService {
 		/* Find the product using productId */
 		Product savedProduct = this.productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product","productId",productId));
 		
-		/* locate the path */
-		String path = "src/main/resources/static/Image/";
-		
 		/* Get the filename when image get uploaded.Below method will return the filename after the image gets uploaded */
-		String fileName = uploadImage(path,image);
+		String fileName = this.fileService.uploadImage(path,image);
 		
 		/*updating the image name and save the updated details*/
 		savedProduct.setImage(fileName);
@@ -144,33 +149,5 @@ public class ProductServiceImpl implements ProductService {
 	private Product productDtoToProduct(ProductDTO productDTO) {
 		return modelMapper.map(productDTO, Product.class);
 	}
-	
-	private String uploadImage(String path ,MultipartFile image) throws IOException {
-		/* get the file name i.e. image name which is current/original file */
-		String originalName = image.getOriginalFilename();
-		
-		/* Generate unique file name */
-		String randomIdforImage = UUID.randomUUID().toString();
-		
-		/* if image name demo.jpg then below method transform it into 1234.jpg*/
-		String fileNameforImage = randomIdforImage.concat(originalName.substring(originalName.lastIndexOf('.')));
-		
-		/*this will concate file path with image */
-		String filePath = path + File.separator+fileNameforImage;
-		
-		/*Check if path exist or create*/
-		
-		File folder = new File(path);
-		
-		if(!folder.exists())
-			folder.mkdir();
-		
-		/*this will copy the inputstream to the path we have specified*/
-		Files.copy(image.getInputStream(), Paths.get(filePath));
-		
-		return fileNameforImage;
-	}
 
-	
-	
 }
