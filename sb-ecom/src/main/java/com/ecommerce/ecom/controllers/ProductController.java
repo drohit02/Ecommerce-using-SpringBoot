@@ -1,5 +1,7 @@
 package com.ecommerce.ecom.controllers;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ecommerce.ecom.custom_error_response.ProductRemovalResponse;
 import com.ecommerce.ecom.dto.ProductDTO;
@@ -52,6 +56,12 @@ public class ProductController {
 	public ResponseEntity<ProductDTO> updateProductData(@RequestBody ProductDTO productDTO,@PathVariable Long productId){
 		ProductDTO updatedProductDTO = this.productService.updateExitingProductData(productDTO,productId);	
 		return new ResponseEntity<ProductDTO>(updatedProductDTO,HttpStatus.OK);
+	}
+	
+	@PutMapping("/admin/product/{productId}/image")
+	public ResponseEntity<ProductDTO> updateProductImage(@PathVariable Long productId, @RequestParam("image") MultipartFile image) throws IOException{
+		ProductDTO updateProductDTO = this.productService.updateProductWithImage(productId,image);
+		return new ResponseEntity<>(updateProductDTO,HttpStatus.OK);
 	}
 	
 	@DeleteMapping("/admin/product/{productId}")
