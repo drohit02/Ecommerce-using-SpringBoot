@@ -21,6 +21,8 @@ import com.ecommerce.ecom.dto.ProductDTO;
 import com.ecommerce.ecom.payload.ProductResponse;
 import com.ecommerce.ecom.service.ProductService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api")
 public class ProductController {
@@ -47,13 +49,13 @@ public class ProductController {
 	}
 	
 	@PostMapping("/admin/categories/{categoryId}/product")
-	public ResponseEntity<ProductDTO> addProduct(@RequestBody ProductDTO productDTO,@PathVariable Long categoryId){
+	public ResponseEntity<ProductDTO> addProduct(@Valid @RequestBody ProductDTO productDTO,@PathVariable Long categoryId){
 		ProductDTO savedProductDTO = this.productService.addProduct(productDTO,categoryId);
 		return new ResponseEntity<ProductDTO>(savedProductDTO,HttpStatus.CREATED);
 	}
 	
 	@PutMapping("/admin/product/{productId}")
-	public ResponseEntity<ProductDTO> updateProductData(@RequestBody ProductDTO productDTO,@PathVariable Long productId){
+	public ResponseEntity<ProductDTO> updateProductData(@Valid @RequestBody ProductDTO productDTO,@PathVariable Long productId){
 		ProductDTO updatedProductDTO = this.productService.updateExitingProductData(productDTO,productId);	
 		return new ResponseEntity<ProductDTO>(updatedProductDTO,HttpStatus.OK);
 	}

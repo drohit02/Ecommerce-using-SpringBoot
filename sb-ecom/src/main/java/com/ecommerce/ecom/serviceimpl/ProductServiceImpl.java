@@ -1,11 +1,7 @@
 package com.ecommerce.ecom.serviceimpl;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ecommerce.ecom.custom_exception.APIException;
 import com.ecommerce.ecom.custom_exception.ResourceNotFoundException;
 import com.ecommerce.ecom.dto.ProductDTO;
 import com.ecommerce.ecom.model.Category;
@@ -34,8 +31,11 @@ public class ProductServiceImpl implements ProductService {
 	private CategoryRepository categoryRepository;
 	@Autowired
 	private FileService fileService;
-	
-	/* locate the path for the upload image and fetching the value from application.properties */
+
+	/*
+	 * locate the path for the upload image and fetching the value from
+	 * application.properties
+	 */
 	@Value("${project.image}")
 	String path;
 
@@ -47,69 +47,80 @@ public class ProductServiceImpl implements ProductService {
 			throw new ResourceNotFoundException("Product List is empty");
 		return mapProductResponse(products);
 	}
-	
+
 	@Override
 	public ProductResponse getProductWithCategoryId(Long categoryId) {
-		Category category = this.categoryRepository.findById(categoryId).orElseThrow(()->new ResourceNotFoundException("Category","categoryId",categoryId));
-		List<Product> products= this.productRepository.findAllByCategory(category);
+		Category category = this.categoryRepository.findById(categoryId)
+				.orElseThrow(() -> new ResourceNotFoundException("Category", "categoryId", categoryId));
+		List<Product> products = this.productRepository.findAllByCategory(category);
 		if (products.isEmpty())
-			throw new ResourceNotFoundException("Product list is empty");
+			throw new APIException("Product list is empty");
 		return mapProductResponse(products);
 	}
-	
+
 	@Override
 	public ProductResponse getProductWithKeyword(String keyword) {
-		List<Product> products = this.productRepository.findAllByProductNameLikeIgnoreCase('%'+keyword+'%');
-		if(products.isEmpty())
-			throw new ResourceNotFoundException("Product with the "+keyword+" is not found!!!");
+		List<Product> products = this.productRepository.findAllByProductNameLikeIgnoreCase('%' + keyword + '%');
+		if (products.isEmpty())
+			throw new APIException("Product with the " + keyword + " is not found!!!");
 		return mapProductResponse(products);
 	}
 
 	@Override
 	public ProductDTO addProduct(ProductDTO productDTO, Long categoryId) {
 		Category category = findCategoryById(categoryId);
-		Product product = productDtoToProduct(productDTO);
+
+		boolean productPresent = isProductPresent(category.getProducts(), productDTO.getProductName());
 		
-		product.setCategory(category);
-		product.setSpecialPrice(calculateSpeciaPrize(product));
-		product.setImage("default.png");
-		Product saveProduct = this.productRepository.save(product);
-		
-		return productToProductDTO(saveProduct);
+		if (productPresent) {
+			Product product = productDtoToProduct(productDTO);
+
+			product.setCategory(category);
+			product.setSpecialPrice(calculateSpeciaPrize(product));
+			product.setImage("default.png");
+			Product saveProduct = this.productRepository.save(product);
+
+			return productToProductDTO(saveProduct);
+		} else {
+			throw new ResourceNotFoundException("Product is already present in database!!");
+		}
+
 	}
-	
+
 	@Override
 	public ProductDTO updateExitingProductData(ProductDTO productDTO, Long productId) {
-		Product savedProduct = this.productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product","productId",productId));
+		Product savedProduct = this.productRepository.findById(productId)
+				.orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
 		Product updatedProduct = updateProductData(savedProduct, productDtoToProduct(productDTO));
 		return productToProductDTO(updatedProduct);
 	}
-	
 
 	@Override
 	public ProductDTO deleteProductById(Long productId) {
-		Product product = this.productRepository.findById(productId).orElseThrow(()-> new ResourceNotFoundException("Product","Productid",productId));
+		Product product = this.productRepository.findById(productId)
+				.orElseThrow(() -> new ResourceNotFoundException("Product", "Productid", productId));
 		this.productRepository.deleteById(product.getProductId());
 		return productToProductDTO(product);
 	}
-	
-	
+
 	@Override
 	public ProductDTO updateProductWithImage(Long productId, MultipartFile image) throws IOException {
 		/* Find the product using productId */
-		Product savedProduct = this.productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product","productId",productId));
-		
-		/* Get the filename when image get uploaded.Below method will return the filename after the image gets uploaded */
-		String fileName = this.fileService.uploadImage(path,image);
-		
-		/*updating the image name and save the updated details*/
+		Product savedProduct = this.productRepository.findById(productId)
+				.orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+
+		/*
+		 * Get the filename when image get uploaded.Below method will return the
+		 * filename after the image gets uploaded
+		 */
+		String fileName = this.fileService.uploadImage(path, image);
+
+		/* updating the image name and save the updated details */
 		savedProduct.setImage(fileName);
-		
+
 		Product updatedProduct = this.productRepository.save(savedProduct);
 		return productToProductDTO(updatedProduct);
 	}
-
-
 
 	/*-----------------------------------HELPER METHOD AREA-----------------------------------------*/
 
@@ -131,8 +142,8 @@ public class ProductServiceImpl implements ProductService {
 		productResponse.setProducts(productList);
 		return productResponse;
 	}
-	
-	private Product updateProductData(Product savedProduct,Product product) {
+
+	private Product updateProductData(Product savedProduct, Product product) {
 		savedProduct.setProductName(product.getProductName());
 		savedProduct.setDescription(product.getDescription());
 		savedProduct.setPrice(product.getPrice());
@@ -142,12 +153,24 @@ public class ProductServiceImpl implements ProductService {
 		Product updatedProduct = this.productRepository.save(savedProduct);
 		return updatedProduct;
 	}
-	
+
 	private ProductDTO productToProductDTO(Product product) {
 		return modelMapper.map(product, ProductDTO.class);
 	}
+
 	private Product productDtoToProduct(ProductDTO productDTO) {
 		return modelMapper.map(productDTO, Product.class);
+	}
+
+	private boolean isProductPresent(List<Product> products, String productName) {
+		boolean isFound = true;
+		for (Product product : products) {
+			if (product.getProductName().equals(productName)) {
+				isFound = false;
+				break;
+			}
+		}
+		return isFound;
 	}
 
 }
