@@ -1,7 +1,4 @@
-package com.ecommerce.ecom.config;
-
-
-
+package com.ecommerce.ecom.security.config;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
