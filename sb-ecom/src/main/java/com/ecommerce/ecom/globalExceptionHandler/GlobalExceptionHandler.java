@@ -45,6 +45,5 @@ public class GlobalExceptionHandler {
 		errors.put("cause", ex.getMessage());
 		ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(),HttpStatus.BAD_REQUEST.value(),HttpStatus.BAD_REQUEST,errors);
 		return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
-		
 	}
 }

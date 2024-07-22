@@ -1,5 +1,6 @@
 package com.ecommerce.ecom.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -32,5 +33,9 @@ public class Product {
 	@ManyToOne
 	@JoinColumn(name="category_id")
 	private Category category;
+	
+	@ManyToOne
+	@JoinColumn(name = "seller_id",referencedColumnName = "userId")
+	private User user;
 
 }
