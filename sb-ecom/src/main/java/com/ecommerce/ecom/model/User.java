@@ -42,7 +42,7 @@ public class User {
 	@NotBlank(message = "username is required")
 	@Size(min = 20,max = 50,message = "username should be minimum 20 and maximum 50 character")
 	@Column(name = "username")
-	private String userName;
+	private String username;
 	
 	@NotBlank(message = "password is required")
 	@Size(min = 8,max = 50,message = "password should be minimum 8 and maximum 50 character")
