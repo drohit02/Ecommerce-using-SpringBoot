@@ -22,8 +22,8 @@ import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.ecommerce.ecom.jwt.AuthEntryPointJwt;
-import com.ecommerce.ecom.jwt.AuthTokenFilter;
+import com.ecommerce.ecom.security.jwt.AuthEntryPointJwt;
+import com.ecommerce.ecom.security.jwt.AuthTokenFilter;
 
 @Configuration
 @EnableWebSecurity

@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ecommerce.ecom.jwt.JwtUtils;
-import com.ecommerce.ecom.jwt.LoginRequest;
-import com.ecommerce.ecom.jwt.LoginResponse;
+import com.ecommerce.ecom.security.jwt.JwtUtils;
+import com.ecommerce.ecom.security.jwt.LoginRequest;
+import com.ecommerce.ecom.security.jwt.LoginResponse;
 
 @RestController
 @RequestMapping("/api")
