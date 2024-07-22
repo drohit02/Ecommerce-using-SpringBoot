@@ -1,4 +1,4 @@
-package com.ecommerce.ecom.controllers;
+package com.ecommerce.ecom.security.authcontroller;
 
 import java.util.HashMap;
 import java.util.List;
