@@ -4,10 +4,11 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.ecommerce.ecom.app_enum.AppRole;
 import com.ecommerce.ecom.model.Role;
 
 public interface RoleRepository extends JpaRepository<Role, Integer>{
 
-	Optional<Role> findByRoleName(String string);
+	Optional<Role> findByRoleName(AppRole appRole);
 
 }

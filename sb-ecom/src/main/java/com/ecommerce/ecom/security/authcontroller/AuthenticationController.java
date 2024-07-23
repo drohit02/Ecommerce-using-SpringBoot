@@ -35,8 +35,8 @@ import com.ecommerce.ecom.security.response.UserInfoResponse;
 import com.ecommerce.ecom.security.services.UserDetailsImpl;
 
 @RestController
-@RequestMapping("/api")
-public class UserAuthController {
+@RequestMapping("/api/auth")
+public class AuthenticationController {
 
 	@Autowired
 	private JwtUtils jwtUtils;
@@ -84,11 +84,11 @@ public class UserAuthController {
 	@PostMapping("/signup")
 	public ResponseEntity<?> registerUser(@RequestBody SignupRequest signUpRequest) {
 		if (this.userRepository.existsByUsername(signUpRequest.getUsername())) {
-			return ResponseEntity.badRequest().body(new MessageResponse(LocalDateTime.now(), "Uer alredy exist"));
+			return ResponseEntity.badRequest().body(new MessageResponse(LocalDateTime.now(), "User is alredy exist!!!"));
 		}
 
 		if (this.userRepository.existsByEmail(signUpRequest.getEmail())) {
-			return ResponseEntity.badRequest().body(null);
+			return ResponseEntity.badRequest().body(new MessageResponse(LocalDateTime.now(),"Email is already in use!!!"));
 		}
 
 		User user = new User(signUpRequest.getPassword(), passwordEncoder.encode(signUpRequest.getPassword()),
@@ -97,26 +97,26 @@ public class UserAuthController {
 		Set<Role> roles = new HashSet<>();
 
 		if (strRoles == null) {
-			Role userRole = this.roleRepository.findByRoleName(AppRole.ROLE_USER.toString())
-					.orElseThrow(() -> new RuntimeException());
+			Role userRole = this.roleRepository.findByRoleName(AppRole.ROLE_USER)
+					.orElseThrow(() -> new RuntimeException("Role is not Found!!!"));
 			roles.add(userRole);
 		} else {
 			strRoles.forEach(role -> {
 				switch (role) {
 				case "admin":
-					Role adminRole = this.roleRepository.findByRoleName(AppRole.ROLE_ADMIN.toString())
-							.orElseThrow(() -> new RuntimeException());
+					Role adminRole = this.roleRepository.findByRoleName(AppRole.ROLE_ADMIN)
+							.orElseThrow(() -> new RuntimeException("Role is Not found!!!"));
 					roles.add(adminRole);
 					break;
 
 				case "seller":
-					Role sellerRole = this.roleRepository.findByRoleName(AppRole.ROLE_SELLER.toString())
-							.orElseThrow(() -> new RuntimeException());
+					Role sellerRole = this.roleRepository.findByRoleName(AppRole.ROLE_SELLER)
+							.orElseThrow(() -> new RuntimeException("Role is not found!!!!"));
 					roles.add(sellerRole);
 					break;
 
 				default:
-					Role userRole = this.roleRepository.findByRoleName(AppRole.ROLE_USER.toString())
+					Role userRole = this.roleRepository.findByRoleName(AppRole.ROLE_USER)
 							.orElseThrow(() -> new RuntimeException());
 					roles.add(userRole);
 				}
@@ -125,7 +125,7 @@ public class UserAuthController {
 		user.setRoles(roles);
 		this.userRepository.save(user);
 		return new ResponseEntity<MessageResponse>(
-				new MessageResponse(LocalDateTime.now(), "User Register Successfully"), HttpStatus.OK);
+				new MessageResponse(LocalDateTime.now(), "User Register Successfully!!!"), HttpStatus.OK);
 
 	}
 }

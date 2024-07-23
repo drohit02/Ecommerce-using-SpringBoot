@@ -40,7 +40,7 @@ public class User {
 	private Long userId;
 	
 	@NotBlank(message = "username is required")
-	@Size(min = 20,max = 50,message = "username should be minimum 20 and maximum 50 character")
+	@Size(min = 5,max = 50,message = "username should be minimum 20 and maximum 50 character")
 	@Column(name = "username")
 	private String username;
 	

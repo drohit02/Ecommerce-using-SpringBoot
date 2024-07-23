@@ -15,6 +15,8 @@ import com.ecommerce.ecom.custom_error_response.ErrorResponse;
 import com.ecommerce.ecom.custom_exception.APIException;
 import com.ecommerce.ecom.custom_exception.ResourceNotFoundException;
 
+import jakarta.validation.ConstraintViolationException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -30,6 +32,18 @@ public class GlobalExceptionHandler {
 		ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(),HttpStatus.BAD_REQUEST.value(),HttpStatus.BAD_REQUEST,errors);
 		return new ResponseEntity<ErrorResponse>(errorResponse,HttpStatus.BAD_REQUEST);
 	}
+	
+	@ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, String>> handleConstraintViolationException(ConstraintViolationException e) {
+        Map<String, String> errors = new HashMap<>();
+        e.getConstraintViolations().forEach(constraintViolation -> {
+            String propertyPath = constraintViolation.getPropertyPath().toString();
+            String message = constraintViolation.getMessage();
+            errors.put(propertyPath, message);
+        });
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
 	
 	@ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {

@@ -62,7 +62,7 @@ public class WebSecurityConfig {
 		http.csrf(csrf->csrf.disable());
 		http.exceptionHandling(exception-> exception.authenticationEntryPoint(unauthorizedHandler));
 		http.sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-		http.authorizeHttpRequests(auth->auth.requestMatchers("/api/signin").permitAll()
+		http.authorizeHttpRequests(auth->auth.requestMatchers("/api/auth/**").permitAll()
 											  .requestMatchers("/images").permitAll()
 											  .anyRequest().authenticated()
 		);
