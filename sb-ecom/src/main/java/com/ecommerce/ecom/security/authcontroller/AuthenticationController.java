@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +37,7 @@ import com.ecommerce.ecom.security.request.SignupRequest;
 import com.ecommerce.ecom.security.response.UserInfoResponse;
 import com.ecommerce.ecom.security.services.UserDetailsImpl;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -79,20 +81,21 @@ public class AuthenticationController {
 		List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority())
 				.collect(Collectors.toList());
 
-		UserInfoResponse response = new UserInfoResponse(userDetails.getUserId(), jwtCookie.getValue(), userDetails.getUsername(),
-				roles);
+		UserInfoResponse response = new UserInfoResponse(userDetails.getUserId(), userDetails.getUsername(), roles);
 
-		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,jwtCookie.toString() ).body(response);
+		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString()).body(response);
 	}
 
 	@PostMapping("/signup")
 	public ResponseEntity<?> registerUser(@RequestBody SignupRequest signUpRequest) {
 		if (this.userRepository.existsByUsername(signUpRequest.getUsername())) {
-			return ResponseEntity.badRequest().body(new MessageResponse(LocalDateTime.now(), "User is alredy exist!!!"));
+			return ResponseEntity.badRequest()
+					.body(new MessageResponse(LocalDateTime.now(), "User is alredy exist!!!"));
 		}
 
 		if (this.userRepository.existsByEmail(signUpRequest.getEmail())) {
-			return ResponseEntity.badRequest().body(new MessageResponse(LocalDateTime.now(),"Email is already in use!!!"));
+			return ResponseEntity.badRequest()
+					.body(new MessageResponse(LocalDateTime.now(), "Email is already in use!!!"));
 		}
 
 		User user = new User(signUpRequest.getPassword(), passwordEncoder.encode(signUpRequest.getPassword()),
@@ -131,5 +134,50 @@ public class AuthenticationController {
 		return new ResponseEntity<MessageResponse>(
 				new MessageResponse(LocalDateTime.now(), "User Register Successfully!!!"), HttpStatus.OK);
 
+	}
+
+	@GetMapping("/username")
+	public ResponseEntity<?> currentUsername(Authentication authentication) {
+		if (authentication == null || !(authentication.getPrincipal() instanceof UserDetailsImpl)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(new MessageResponse(LocalDateTime.now(), "Please login first."));
+		}
+
+		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+		String username = userDetails.getUsername();
+
+		return ResponseEntity.ok(username);
+	}
+
+	@GetMapping("/user")
+	public ResponseEntity<?> currentUserDetails(Authentication authentication) {
+		if (authentication == null || !(authentication.getPrincipal() instanceof UserDetailsImpl)) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body(new MessageResponse(LocalDateTime.now(), "Please login first."));
+		}
+
+		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+		List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority())
+				.collect(Collectors.toList());
+
+		UserInfoResponse response = new UserInfoResponse(userDetails.getUserId(), userDetails.getUsername(), roles);
+
+		return ResponseEntity.ok().body(response);
+
+	}
+
+	@PostMapping("/signout")
+	public ResponseEntity<?> signoutUser(HttpServletRequest request) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication == null || !(authentication.getPrincipal() instanceof UserDetailsImpl)) {
+			// If no user is logged in
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body(new MessageResponse(LocalDateTime.now(), "Please login first."));
+		}
+
+		ResponseCookie cookie = this.jwtUtils.getCleanJwtCokie();
+		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+				.body(new MessageResponse(LocalDateTime.now(), "You've been signed out!!"));
 	}
 }

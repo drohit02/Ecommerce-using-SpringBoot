@@ -50,6 +50,11 @@ public class JwtUtils {
 				.httpOnly(false).secure(false).build();
 		return cookie;
 	}
+	
+	public ResponseCookie getCleanJwtCokie() {
+		ResponseCookie cookies = ResponseCookie.from(jwtCookie, null).path("/api").build();
+		return cookies;
+	}
 
 	private Key key() {
 		return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
@@ -81,8 +86,8 @@ public class JwtUtils {
 	}
 
 	/*
-	 * Cookie based authentication is implemented hence this code is commited public
-	 * String getJwtFromHeader(HttpServletRequest request) { String bearerToken =
+	 * Cookie based authentication is implemented hence this code is commited 
+	 * public String getJwtFromHeader(HttpServletRequest request) { String bearerToken =
 	 * request.getHeader("Authorization"); logger.debug("Authorization Header: {}",
 	 * bearerToken); if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
 	 * return bearerToken.substring(7); // Remove Bearer prefix } return null; }
