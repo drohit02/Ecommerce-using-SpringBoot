@@ -9,7 +9,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,6 +36,8 @@ import com.ecommerce.ecom.security.request.SignupRequest;
 import com.ecommerce.ecom.security.response.UserInfoResponse;
 import com.ecommerce.ecom.security.services.UserDetailsImpl;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthenticationController {
@@ -54,7 +58,7 @@ public class AuthenticationController {
 	private RoleRepository roleRepository;
 
 	@PostMapping("/signin")
-	public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 		Authentication authentication;
 		try {
 			authentication = authenticationManager.authenticate(
@@ -70,15 +74,15 @@ public class AuthenticationController {
 
 		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-		String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
+		ResponseCookie jwtCookie = jwtUtils.genetateJwtCookie(userDetails);
 
 		List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority())
 				.collect(Collectors.toList());
 
-		UserInfoResponse response = new UserInfoResponse(userDetails.getUserId(), jwtToken, userDetails.getUsername(),
+		UserInfoResponse response = new UserInfoResponse(userDetails.getUserId(), jwtCookie.getValue(), userDetails.getUsername(),
 				roles);
 
-		return ResponseEntity.ok(response);
+		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,jwtCookie.toString() ).body(response);
 	}
 
 	@PostMapping("/signup")
