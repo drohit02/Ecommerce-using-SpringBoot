@@ -19,6 +19,7 @@ public class ProductDTO {
 	@NotBlank(message = "product name is required")
 	@Size(min = 5,message = "product name should conatain at-least 10 letters")
 	private String productName;
+	
 	private String image;
 	
 	@NotBlank(message = "product description is required")

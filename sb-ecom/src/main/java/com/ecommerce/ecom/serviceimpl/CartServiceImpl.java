@@ -117,23 +117,22 @@ public class CartServiceImpl implements CartService {
 		}).toList();
 		return cartDTOs;
 	}
-	
-	
+
 	@Override
-	public CartDTO findUserCartByUserId(String email,Long cartId) {
-		Cart cart = this.cartRepository.findByEmailIdAndCartId(email,cartId);
-		if(cart==null) 
-			throw new ResourceNotFoundException("Cart not found with the email "+email);
-	  CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
-	  
-	  List<ProductDTO> products = cart.getCartItems().stream()
-			  .map(product->modelMapper.map(product, ProductDTO.class)).toList();
-	  cartDTO.setProducts(products);
-	  return cartDTO;
+	public CartDTO findUserCartByUserId(String email, Long cartId) {
+		Cart cart = this.cartRepository.findByEmailIdAndCartId(email, cartId);
+		if (cart == null)
+			throw new ResourceNotFoundException("Cart not found with the email " + email);
+
+		cart.getCartItems().forEach(item->item.getProduct().setQuantity(item.getQuantity()));
+		
+		CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+
+		List<ProductDTO> products = cart.getCartItems().stream()
+				.map(product -> modelMapper.map(product.getProduct(), ProductDTO.class)).toList();
+		cartDTO.setProducts(products);
+		return cartDTO;
 	}
-	
-	
-	
 
 	/*----------------------------------Helper Method Area------------------------------*/
 
@@ -148,7 +147,5 @@ public class CartServiceImpl implements CartService {
 		Cart savedUserCart = this.cartRepository.save(cart);
 		return savedUserCart;
 	}
-
-	
 
 }
