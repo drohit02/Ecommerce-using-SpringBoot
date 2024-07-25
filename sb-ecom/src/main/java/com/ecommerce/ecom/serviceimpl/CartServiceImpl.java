@@ -120,9 +120,16 @@ public class CartServiceImpl implements CartService {
 	
 	
 	@Override
-	public CartDTO findUserCartByUserId(Long userId) {
-		Cart cart = this.cartRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("Cart","user and userId ",userId));
-		return null;
+	public CartDTO findUserCartByUserId(String email,Long cartId) {
+		Cart cart = this.cartRepository.findByEmailIdAndCartId(email,cartId);
+		if(cart==null) 
+			throw new ResourceNotFoundException("Cart not found with the email "+email);
+	  CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+	  
+	  List<ProductDTO> products = cart.getCartItems().stream()
+			  .map(product->modelMapper.map(product, ProductDTO.class)).toList();
+	  cartDTO.setProducts(products);
+	  return cartDTO;
 	}
 	
 	
@@ -131,7 +138,7 @@ public class CartServiceImpl implements CartService {
 	/*----------------------------------Helper Method Area------------------------------*/
 
 	private Cart createCart() {
-		Cart userCart = this.cartRepository.findCartByEmail(authUtils.loggedInEmail());
+		Cart userCart = this.cartRepository.findCartByEmail(authUtils.loggedInEmail()).get();
 		if (userCart != null) {
 			return userCart;
 		}

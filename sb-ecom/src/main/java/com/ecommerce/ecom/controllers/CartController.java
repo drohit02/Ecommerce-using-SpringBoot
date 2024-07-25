@@ -11,33 +11,45 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ecommerce.ecom.custom_exception.ResourceNotFoundException;
 import com.ecommerce.ecom.dto.CartDTO;
+import com.ecommerce.ecom.model.Cart;
+import com.ecommerce.ecom.repository.CartRepository;
 import com.ecommerce.ecom.service.CartService;
+import com.ecommerce.ecom.utils.AuthUtils;
 
 @RestController
 @RequestMapping("/api/carts")
 public class CartController {
-	
+
 	@Autowired
 	private CartService cartService;
-	
+
+	@Autowired
+	private AuthUtils authUtils;
+
+	@Autowired
+	private CartRepository cartRepository;
+
 	@PostMapping("/products/{productId}/quantity/{quantity}")
-	public ResponseEntity<CartDTO> addProoductToCart(@PathVariable Long productId,@PathVariable Integer quantity ){
+	public ResponseEntity<CartDTO> addProoductToCart(@PathVariable Long productId, @PathVariable Integer quantity) {
 		CartDTO cartDTO = this.cartService.addProductToCart(productId, quantity);
-		return new ResponseEntity<CartDTO>(cartDTO,HttpStatus.CREATED);
+		return new ResponseEntity<CartDTO>(cartDTO, HttpStatus.CREATED);
 	}
-	
+
 	@GetMapping
-	public ResponseEntity<List<CartDTO>> getAllCarts(){
+	public ResponseEntity<List<CartDTO>> getAllCarts() {
 		List<CartDTO> carts = this.cartService.findAllCarts();
-		return new ResponseEntity<List<CartDTO>>(carts,HttpStatus.OK);
+		return new ResponseEntity<List<CartDTO>>(carts, HttpStatus.OK);
 	}
-	
-	@GetMapping("/users/{userId}")
-	public ResponseEntity<CartDTO> getCartByUserId(@PathVariable Long userId){
-		CartDTO cart = this.cartService.findUserCartByUserId(userId);
-		return new ResponseEntity<CartDTO>(cart,HttpStatus.OK);
+
+	@GetMapping("/users/cart")
+	public ResponseEntity<CartDTO> getCartByUserId() {
+		String email = this.authUtils.loggedInEmail();
+		Cart savedCart = this.cartRepository.findCartByEmail(email)
+				.orElseThrow(() -> new ResourceNotFoundException("Cart", "email", email));
+		CartDTO cart = this.cartService.findUserCartByUserId(email,savedCart.getCartId());
+		return new ResponseEntity<CartDTO>(cart, HttpStatus.OK);
 	}
-	
 
 }

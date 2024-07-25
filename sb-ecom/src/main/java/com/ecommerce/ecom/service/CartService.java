@@ -10,6 +10,6 @@ public interface CartService {
 
 	List<CartDTO> findAllCarts();
 
-	CartDTO findUserCartByUserId(Long userId);
+	CartDTO findUserCartByUserId(String email, Long cartId);
 
 }
