@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -50,6 +51,12 @@ public class CartController {
 				.orElseThrow(() -> new ResourceNotFoundException("Cart", "email", email));
 		CartDTO cart = this.cartService.findUserCartByUserId(email,savedCart.getCartId());
 		return new ResponseEntity<CartDTO>(cart, HttpStatus.OK);
+	}
+	
+	@PutMapping("/products/{productId}/quantity/{operation}")
+	public ResponseEntity<CartDTO> updateCartProduct(@PathVariable Long productId,@PathVariable String operation){
+		CartDTO cartDTO = this.cartService.updateProductQuantityInCart(productId,operation.equalsIgnoreCase("delete")?-1 : 1);
+		return new ResponseEntity<CartDTO>(cartDTO,HttpStatus.OK);
 	}
 
 }

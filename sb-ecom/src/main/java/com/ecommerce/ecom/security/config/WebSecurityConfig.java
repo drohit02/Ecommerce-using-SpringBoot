@@ -79,7 +79,9 @@ public class WebSecurityConfig {
 				"/swagger-resouceses/**",
 				"/configuration/security",
 				"swagger-ui.html",
-				"/webjars/**"
+				"/webjars/**",
+				"/actuator/",
+				"/actuator/**"
 		));
 	}
 }

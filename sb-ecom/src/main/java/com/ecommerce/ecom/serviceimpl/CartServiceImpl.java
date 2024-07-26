@@ -20,6 +20,8 @@ import com.ecommerce.ecom.repository.ProductRepository;
 import com.ecommerce.ecom.service.CartService;
 import com.ecommerce.ecom.utils.AuthUtils;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class CartServiceImpl implements CartService {
 
@@ -124,14 +126,34 @@ public class CartServiceImpl implements CartService {
 		if (cart == null)
 			throw new ResourceNotFoundException("Cart not found with the email " + email);
 
-		cart.getCartItems().forEach(item->item.getProduct().setQuantity(item.getQuantity()));
-		
+		cart.getCartItems().forEach(item -> item.getProduct().setQuantity(item.getQuantity()));
+
 		CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
 
 		List<ProductDTO> products = cart.getCartItems().stream()
 				.map(product -> modelMapper.map(product.getProduct(), ProductDTO.class)).toList();
 		cartDTO.setProducts(products);
 		return cartDTO;
+	}
+
+	@Transactional
+	@Override
+	public CartDTO updateProductQuantityInCart(Long productId, int operation) {
+		String email = this.authUtils.loggedInEmail();
+		Cart userCart = this.cartRepository.findCartByEmail(email).get();
+
+		Long cartId = userCart.getCartId();
+		Cart cart = this.cartRepository.findById(cartId)
+				.orElseThrow(() -> new ResourceNotFoundException("User cart ", "emailId", email));
+
+		Product product = this.productRepository.findById(productId)
+				.orElseThrow(() -> new ResourceNotFoundException("Product ", "productId ", productId));
+		
+		if(product.getQuantity() == 0)
+			throw new APIException(product+" is not available in the cart!!!");
+		
+		
+		return null;
 	}
 
 	/*----------------------------------Helper Method Area------------------------------*/
