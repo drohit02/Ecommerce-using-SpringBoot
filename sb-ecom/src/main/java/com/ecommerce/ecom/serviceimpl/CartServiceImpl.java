@@ -2,6 +2,7 @@ package com.ecommerce.ecom.serviceimpl;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,23 +139,70 @@ public class CartServiceImpl implements CartService {
 
 	@Transactional
 	@Override
-	public CartDTO updateProductQuantityInCart(Long productId, int operation) {
+	public CartDTO updateProductQuantityInCart(Long productId, Integer quantity) {
 		String email = this.authUtils.loggedInEmail();
 		Cart userCart = this.cartRepository.findCartByEmail(email).get();
-
 		Long cartId = userCart.getCartId();
+
 		Cart cart = this.cartRepository.findById(cartId)
 				.orElseThrow(() -> new ResourceNotFoundException("User cart ", "emailId", email));
 
 		Product product = this.productRepository.findById(productId)
 				.orElseThrow(() -> new ResourceNotFoundException("Product ", "productId ", productId));
+
+		if (product.getQuantity() == 0)
+			throw new APIException(product + " is not available in the cart!!!");
+
+		if (product.getQuantity() < quantity)
+			throw new APIException("Please,make an order of the " + product.getProductName()
+					+ " less than or equal to the quantity " + product.getQuantity() + ".");
 		
-		if(product.getQuantity() == 0)
-			throw new APIException(product+" is not available in the cart!!!");
+		CartItems cartItem = this.cartItemRepository.findCartItemsByProductIdAndCartId(cartId, productId);
+		if(cartItem == null)
+			throw new APIException("Product "+product.getProductName()+" not present in Cart");
 		
+		cartItem.setProductPrice(product.getSpecialPrice());
+		cartItem.setQuantity(cartItem.getQuantity()+quantity);
+		cartItem.setDiscount(product.getDiscount());
+		cart.setTotalPrice(cart.getTotalPrice() + (cartItem.getProductPrice()*quantity));
+		this.cartRepository.save(cart);
 		
-		return null;
+		CartItems updatedItem = this.cartItemRepository.save(cartItem);
+		if(updatedItem.getQuantity() == 0)
+			this.cartItemRepository.deleteById(updatedItem.getCartItemId());
+		
+		CartDTO cartDTO = this.modelMapper.map(cart,CartDTO.class);
+		List<CartItems> cartItems = cart.getCartItems();
+		
+		Stream<ProductDTO> productStream = cartItems.stream().map(item->{
+			ProductDTO prd = this.modelMapper.map(item.getProduct(), ProductDTO.class);
+			prd.setQuantity(item.getQuantity());
+			return prd;
+		});
+		
+		cartDTO.setProducts(productStream.toList());
+		return cartDTO;
 	}
+	
+	@Override
+	public String deleteProductFromCart(Long cartId, Long productId) {
+		
+		Cart cart = this.cartRepository.findById(cartId).orElseThrow(()->new ResourceNotFoundException("Cart ","cartId", cartId));
+		CartItems cartItem = this.cartItemRepository.findCartItemsByProductIdAndCartId(cartId, productId);
+		if(cartItem == null)
+			throw new ResourceNotFoundException("Product", " productId",productId);
+		
+		cart.setTotalPrice(cart.getTotalPrice() - cartItem.getProductPrice()*cartItem.getQuantity());
+		
+		Product product = cartItem.getProduct();
+		product.setQuantity(product.getQuantity()+cartItem.getQuantity());
+		
+		this.cartItemRepository.deleteCartItemByProductIdAndCartId(cartId,productId);
+		return "Product" +cartItem.getProduct().getProductName()+" removed sucessfully from cart!!";
+		
+	}
+	
+	
 
 	/*----------------------------------Helper Method Area------------------------------*/
 
@@ -169,5 +217,7 @@ public class CartServiceImpl implements CartService {
 		Cart savedUserCart = this.cartRepository.save(cart);
 		return savedUserCart;
 	}
+
+
 
 }
