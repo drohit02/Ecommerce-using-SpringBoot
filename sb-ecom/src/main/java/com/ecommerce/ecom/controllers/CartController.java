@@ -1,5 +1,6 @@
 package com.ecommerce.ecom.controllers;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ecommerce.ecom.custom_error_response.MessageResponse;
 import com.ecommerce.ecom.custom_exception.ResourceNotFoundException;
 import com.ecommerce.ecom.dto.CartDTO;
 import com.ecommerce.ecom.model.Cart;
@@ -61,9 +63,9 @@ public class CartController {
 	}
 	
 	@DeleteMapping("/{cartId}/product/{productId}")
-	public ResponseEntity<String> deleteProductFromCart(@PathVariable Long cartId,Long productId){
+	public ResponseEntity<MessageResponse> deleteProductFromCart(@PathVariable Long cartId,@PathVariable Long productId){
 		String status = this.cartService.deleteProductFromCart(cartId,productId);
-		return new ResponseEntity<String>("status : "+status,HttpStatus.OK);
+		return new ResponseEntity<>(new MessageResponse(LocalDateTime.now(),status),HttpStatus.OK);
 		
 	}
 
