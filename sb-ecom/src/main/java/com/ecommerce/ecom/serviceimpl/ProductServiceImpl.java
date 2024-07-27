@@ -15,12 +15,16 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.ecommerce.ecom.custom_exception.APIException;
 import com.ecommerce.ecom.custom_exception.ResourceNotFoundException;
+import com.ecommerce.ecom.dto.CartDTO;
 import com.ecommerce.ecom.dto.ProductDTO;
+import com.ecommerce.ecom.model.Cart;
 import com.ecommerce.ecom.model.Category;
 import com.ecommerce.ecom.model.Product;
 import com.ecommerce.ecom.payload.ProductResponse;
+import com.ecommerce.ecom.repository.CartRepository;
 import com.ecommerce.ecom.repository.CategoryRepository;
 import com.ecommerce.ecom.repository.ProductRepository;
+import com.ecommerce.ecom.service.CartService;
 import com.ecommerce.ecom.service.FileService;
 import com.ecommerce.ecom.service.ProductService;
 
@@ -35,6 +39,12 @@ public class ProductServiceImpl implements ProductService {
 	private CategoryRepository categoryRepository;
 	@Autowired
 	private FileService fileService;
+	@Autowired
+	private CartService cartService;
+	
+
+	@Autowired
+	private CartRepository cartRepository;
 
 	/*
 	 * locate the path for the upload image and fetching the value from
@@ -90,12 +100,13 @@ public class ProductServiceImpl implements ProductService {
 		Sort sortByAndOrder = sortProducts(sortBy, sortOrder);
 
 		Pageable pageData = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
-		Page<Product> productPages = this.productRepository.findAllByProductNameLikeIgnoreCase('%' + keyword + '%',pageData);
+		Page<Product> productPages = this.productRepository.findAllByProductNameLikeIgnoreCase('%' + keyword + '%',
+				pageData);
 
 		List<Product> products = productPages.getContent();
 		if (products.isEmpty())
 			throw new APIException("Product with the " + keyword + " is not found!!!");
-		ProductResponse productResponse =  mapProductResponse(products);
+		ProductResponse productResponse = mapProductResponse(products);
 		return setProductResponseMetaData(productPages, productResponse);
 	}
 
@@ -125,6 +136,18 @@ public class ProductServiceImpl implements ProductService {
 		Product savedProduct = this.productRepository.findById(productId)
 				.orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
 		Product updatedProduct = updateProductData(savedProduct, productDtoToProduct(productDTO));
+
+		List<Cart> carts = this.cartRepository.findCartsByProductId(productId);
+		List<CartDTO> cartDTOs = carts.stream().map(item -> {
+		    CartDTO cartDTO = modelMapper.map(item, CartDTO.class);
+		    List<ProductDTO> products = item.getCartItems().stream()
+		            .map(p -> modelMapper.map(p.getProduct(), ProductDTO.class))
+		            .toList(); // Collecting the stream into a list
+		    cartDTO.setProducts(products);
+		    return cartDTO;
+		}).toList();
+
+		cartDTOs.forEach(cart->this.cartService.updateProductInCarts(cart.getCartId(),productId));
 		return productToProductDTO(updatedProduct);
 	}
 
@@ -132,6 +155,10 @@ public class ProductServiceImpl implements ProductService {
 	public ProductDTO deleteProductById(Long productId) {
 		Product product = this.productRepository.findById(productId)
 				.orElseThrow(() -> new ResourceNotFoundException("Product", "Productid", productId));
+		
+		List<Cart> carts = this.cartRepository.findCartsByProductId(productId);
+		carts.forEach(cart->cartService.deleteProductFromCart(cart.getCartId(), productId));
+		
 		this.productRepository.deleteById(product.getProductId());
 		return productToProductDTO(product);
 	}
