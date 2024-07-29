@@ -68,12 +68,7 @@ public class User {
 	private Set<Product> products;
 	
 	@ToString.Exclude
-	@ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE})
-	@JoinTable(
-			name ="user_addresses",
-			joinColumns = @JoinColumn(referencedColumnName = "userId"),
-			inverseJoinColumns = @JoinColumn(referencedColumnName = "addressId")
-			)
+	@OneToMany(mappedBy = "user",cascade = {CascadeType.PERSIST,CascadeType.MERGE},orphanRemoval = true)
 	private List<Address> addresses;
 	
 	@ToString.Exclude 
