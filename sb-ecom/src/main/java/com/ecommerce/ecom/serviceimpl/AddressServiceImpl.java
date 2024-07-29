@@ -6,6 +6,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ecommerce.ecom.custom_exception.ResourceNotFoundException;
 import com.ecommerce.ecom.dto.AddressDTO;
 import com.ecommerce.ecom.model.Address;
 import com.ecommerce.ecom.model.User;
@@ -30,6 +31,15 @@ public class AddressServiceImpl implements AddressService{
 		address.setUser(user);
 		Address savedAddress = this.addressRepository.save(address);
 		return this.modelMapper.map(savedAddress, AddressDTO.class);
+	}
+
+	@Override
+	public List<AddressDTO> loadAllAddresses() {
+		List<Address> addresses = this.addressRepository.findAll();
+		if(addresses.isEmpty())
+			throw new ResourceNotFoundException("No addresses are found!!");
+		List<AddressDTO> addressDTOs = addresses.stream().map(item->modelMapper.map(item, AddressDTO.class)).toList();
+		return addressDTOs;
 	}
 
 }

@@ -1,9 +1,11 @@
 package com.ecommerce.ecom.controllers;
 
-import org.apache.catalina.connector.Response;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +30,12 @@ public class AddressController {
 	public ResponseEntity<AddressDTO> createAddress(@RequestBody AddressDTO addressDTO) {
 		User user = this.authUtils.loggedInUser();
 		AddressDTO savedAddress = this.addressService.addAddress(user,addressDTO);
-		return new ResponseEntity<>(savedAddress,HttpStatus.OK);
-		
+		return new ResponseEntity<>(savedAddress,HttpStatus.CREATED);	
+	}
+	
+	@GetMapping("/addreeses")
+	public ResponseEntity<List<AddressDTO>> getAllAddreeses() {
+		List<AddressDTO> addresses = this.addressService.loadAllAddresses();
+		return new ResponseEntity<>(addresses,HttpStatus.OK);
 	}
 }
