@@ -45,4 +45,10 @@ public class AddressController {
 		AddressDTO address = this.addressService.loadAddressById(addressId);
 		return new ResponseEntity<>(address,HttpStatus.OK);
 	}
+	
+	@GetMapping("/addresses/user")
+	public ResponseEntity<List<AddressDTO>> getAllAddressesByUserId() {
+		List<AddressDTO> addresses = this.addressService.loadAllAddressesByUserId();
+		return new ResponseEntity<>(addresses,HttpStatus.OK);
+	}
 }

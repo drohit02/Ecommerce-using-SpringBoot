@@ -12,6 +12,7 @@ import com.ecommerce.ecom.model.Address;
 import com.ecommerce.ecom.model.User;
 import com.ecommerce.ecom.repository.AddressRepository;
 import com.ecommerce.ecom.service.AddressService;
+import com.ecommerce.ecom.utils.AuthUtils;
 
 @Service
 public class AddressServiceImpl implements AddressService{
@@ -21,6 +22,9 @@ public class AddressServiceImpl implements AddressService{
 	
 	@Autowired
 	private AddressRepository addressRepository;
+	
+	@Autowired
+	private AuthUtils authUtils;
 	
 	@Override
 	public AddressDTO addAddress(User user, AddressDTO addressDTO) {
@@ -46,6 +50,13 @@ public class AddressServiceImpl implements AddressService{
 	public AddressDTO loadAddressById(Long addressId) {
 		Address address = this.addressRepository.findById(addressId).orElseThrow(()-> new ResourceNotFoundException("Address ", "addressId ", addressId));
 		return modelMapper.map(address, AddressDTO.class);
+	}
+
+	@Override
+	public List<AddressDTO> loadAllAddressesByUserId() {
+		User user = this.authUtils.loggedInUser();
+		List<Address> addresses = this.addressRepository.findAllByUserId(user.getUserId());
+		return addresses.stream().map(item->modelMapper.map(item,AddressDTO.class)).toList();
 	}
 
 }
