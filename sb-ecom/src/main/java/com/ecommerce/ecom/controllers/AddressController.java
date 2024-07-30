@@ -1,10 +1,13 @@
 package com.ecommerce.ecom.controllers;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ecommerce.ecom.custom_error_response.MessageResponse;
 import com.ecommerce.ecom.dto.AddressDTO;
 import com.ecommerce.ecom.model.User;
 import com.ecommerce.ecom.service.AddressService;
@@ -57,5 +61,12 @@ public class AddressController {
 	public ResponseEntity<AddressDTO> updateAddressData(@PathVariable Long addressId,@RequestBody AddressDTO addressDTO){
 		AddressDTO address = this.addressService.updateAddressById(addressId,addressDTO);
 		return new ResponseEntity<AddressDTO>(address,HttpStatus.OK);
+	}
+	
+	@DeleteMapping("addresses/{addressId}")
+	public ResponseEntity<MessageResponse> deleteById(@PathVariable Long addressId){
+		String status = this.addressService.removeAddressById(addressId);
+		return new ResponseEntity<MessageResponse>(new MessageResponse(LocalDateTime.now(),status),HttpStatus.OK);
+		
 	}
 }

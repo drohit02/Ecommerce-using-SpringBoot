@@ -23,7 +23,7 @@ public class AddressServiceImpl implements AddressService {
 
 	@Autowired
 	private AddressRepository addressRepository;
-	
+
 	@Autowired
 	private UserRepository userRepository;
 
@@ -75,15 +75,28 @@ public class AddressServiceImpl implements AddressService {
 		savedAddress.setPincode(addressData.getPincode());
 		savedAddress.setState(addressData.getState());
 		savedAddress.setStreet(addressData.getStreet());
-		
+
 		Address updatedAddress = this.addressRepository.save(savedAddress);
-		
+
 		User user = savedAddress.getUser();
-		user.getAddresses().removeIf(address->address.getAddressId().equals(addressId));
+		user.getAddresses().removeIf(address -> address.getAddressId().equals(addressId));
 		user.getAddresses().add(updatedAddress);
 		this.userRepository.save(user);
-		
+
 		return modelMapper.map(updatedAddress, AddressDTO.class);
+	}
+
+	@Override
+	public String removeAddressById(Long addressId) {
+		Address savedAddress = this.addressRepository.findById(addressId)
+				.orElseThrow(() -> new ResourceNotFoundException("Address", "addressId", addressId));
+		User user = savedAddress.getUser();
+		user.getAddresses().removeIf(address->address.getAddressId().equals(addressId));
+		this.userRepository.save(user);
+		
+		this.addressRepository.deleteById(addressId);
+		return "Address Deleted Successfully";
+
 	}
 
 }
