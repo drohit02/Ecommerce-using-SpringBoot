@@ -11,6 +11,7 @@ import com.ecommerce.ecom.dto.AddressDTO;
 import com.ecommerce.ecom.model.Address;
 import com.ecommerce.ecom.model.User;
 import com.ecommerce.ecom.repository.AddressRepository;
+import com.ecommerce.ecom.repository.UserRepository;
 import com.ecommerce.ecom.service.AddressService;
 import com.ecommerce.ecom.utils.AuthUtils;
 
@@ -22,6 +23,9 @@ public class AddressServiceImpl implements AddressService {
 
 	@Autowired
 	private AddressRepository addressRepository;
+	
+	@Autowired
+	private UserRepository userRepository;
 
 	@Autowired
 	private AuthUtils authUtils;
@@ -71,7 +75,15 @@ public class AddressServiceImpl implements AddressService {
 		savedAddress.setPincode(addressData.getPincode());
 		savedAddress.setState(addressData.getState());
 		savedAddress.setStreet(addressData.getStreet());
-		return modelMapper.map(this.addressRepository.save(savedAddress), AddressDTO.class);
+		
+		Address updatedAddress = this.addressRepository.save(savedAddress);
+		
+		User user = savedAddress.getUser();
+		user.getAddresses().removeIf(address->address.getAddressId().equals(addressId));
+		user.getAddresses().add(updatedAddress);
+		this.userRepository.save(user);
+		
+		return modelMapper.map(updatedAddress, AddressDTO.class);
 	}
 
 }
