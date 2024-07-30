@@ -33,7 +33,7 @@ public class AddressController {
 		return new ResponseEntity<>(savedAddress,HttpStatus.CREATED);	
 	}
 	
-	@GetMapping("/addreeses")
+	@GetMapping("/addresses")
 	public ResponseEntity<List<AddressDTO>> getAllAddreeses() {
 		List<AddressDTO> addresses = this.addressService.loadAllAddresses();
 		return new ResponseEntity<>(addresses,HttpStatus.OK);
