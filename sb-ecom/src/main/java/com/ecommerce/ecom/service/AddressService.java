@@ -11,4 +11,6 @@ public interface AddressService {
 
 	List<AddressDTO> loadAllAddresses();
 
+	AddressDTO loadAddressById(Long addressId);
+
 }
