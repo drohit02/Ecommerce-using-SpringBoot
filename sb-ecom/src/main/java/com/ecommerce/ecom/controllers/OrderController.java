@@ -24,18 +24,19 @@ public class OrderController {
 	@Autowired
 	private AuthUtils authUtils;
 	
-	@PostMapping("/order/users/payments/{paymentMethod}")
-	public ResponseEntity<OrderDTO> orderProducts(@PathVariable String paymentMethod,@RequestBody OrderRequestDTO orderRequestDTO) {
-		String emailId = this.authUtils.loggedInEmail();
-		OrderDTO order = this.orderService.placeOrder(emailId,
-													paymentMethod,
-													orderRequestDTO.getAddressId(),
-													orderRequestDTO.getPgName(),
-													orderRequestDTO.getPgPaymentId(),
-													orderRequestDTO.getPgStatus(),
-													orderRequestDTO.getPgResponseMessage()
-													);
-		return new ResponseEntity<>(order,HttpStatus.CREATED);
-	}
+	 @PostMapping("/order/users/payments/{paymentMethod}")
+	    public ResponseEntity<OrderDTO> orderProducts(@PathVariable String paymentMethod, @RequestBody OrderRequestDTO orderRequestDTO) {
+	        String emailId = this.authUtils.loggedInEmail();
+	        OrderDTO order = this.orderService.placeOrder(
+	                emailId,
+	                orderRequestDTO.getAddressId(),
+	                paymentMethod,
+	                orderRequestDTO.getPgName(),
+	                orderRequestDTO.getPgPaymentId(),
+	                orderRequestDTO.getPgStatus(),
+	                orderRequestDTO.getPgResponseMessage()
+	        );
+	        return new ResponseEntity<>(order, HttpStatus.CREATED);
+	    }
 
 }

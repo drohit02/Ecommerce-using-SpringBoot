@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 
 import com.ecommerce.ecom.custom_exception.APIException;
 import com.ecommerce.ecom.custom_exception.ResourceNotFoundException;
-import com.ecommerce.ecom.dto.AddressDTO;
 import com.ecommerce.ecom.dto.OrderDTO;
 import com.ecommerce.ecom.dto.OrderItemDTO;
+import com.ecommerce.ecom.dto.ProductDTO;
 import com.ecommerce.ecom.model.Address;
 import com.ecommerce.ecom.model.Cart;
 import com.ecommerce.ecom.model.CartItems;
@@ -35,57 +35,59 @@ import jakarta.transaction.Transactional;
 public class OrderServiceImpl implements OrderService {
 
 	@Autowired
-	private CartRepository cartRepository;
+	CartRepository cartRepository;
 
 	@Autowired
-	private ModelMapper modelMapper;
+	AddressRepository addressRepository;
 
 	@Autowired
-	private AddressRepository addressRepository;
+	OrderItemRepository orderItemRepository;
 
 	@Autowired
-	private OrderItemRepository orderItemRepository;
+	OrderRepository orderRepository;
 
 	@Autowired
-	private OrderRepository orderRepository;
+	PaymentRepository paymentRepository;
 
 	@Autowired
-	private PaymentRepository paymentRepository;
+	CartService cartService;
 
 	@Autowired
-	private CartService cartService;
+	ModelMapper modelMapper;
 
 	@Autowired
-	private ProductRepository productRepository;
+	ProductRepository productRepository;
 
-	@Transactional
 	@Override
-	public OrderDTO placeOrder(String emailId, String paymentMethod, Long addressId, String pgName, String pgPaymentId,
+	@Transactional
+	public OrderDTO placeOrder(String emailId, Long addressId, String paymentMethod, String pgName, String pgPaymentId,
 			String pgStatus, String pgResponseMessage) {
-		Cart cart = this.cartRepository.findCartByEmail(emailId)
-				.orElseThrow(() -> new ResourceNotFoundException("Cart", "email-id", emailId));
+		Cart cart = cartRepository.findCartByEmail(emailId).get();
+		if (cart == null) {
+			throw new ResourceNotFoundException("Cart", "email", emailId);
+		}
 
-		Address address = this.addressRepository.findById(addressId)
+		Address address = addressRepository.findById(addressId)
 				.orElseThrow(() -> new ResourceNotFoundException("Address", "addressId", addressId));
 
 		Order order = new Order();
 		order.setEmail(emailId);
 		order.setOrderDate(LocalDate.now());
 		order.setTotalAmount(cart.getTotalPrice());
-		order.setOrderStatus("Order Accepted!!");
+		order.setOrderStatus("Order Accepted !");
 		order.setAddress(address);
 
 		Payment payment = new Payment(paymentMethod, pgPaymentId, pgStatus, pgResponseMessage, pgName);
 		payment.setOrder(order);
-		payment = this.paymentRepository.save(payment);
+		payment = paymentRepository.save(payment);
 		order.setPayment(payment);
 
-		Order savedOrder = this.orderRepository.save(order);
+		Order savedOrder = orderRepository.save(order);
 
 		List<CartItems> cartItems = cart.getCartItems();
-
-		if (cartItems.isEmpty())
-			throw new APIException("Cart is Empty!!");
+		if (cartItems.isEmpty()) {
+			throw new APIException("Cart is empty");
+		}
 
 		List<OrderItem> orderItems = new ArrayList<>();
 		for (CartItems cartItem : cartItems) {
@@ -97,22 +99,37 @@ public class OrderServiceImpl implements OrderService {
 			orderItem.setOrder(savedOrder);
 			orderItems.add(orderItem);
 		}
-		orderItems = this.orderItemRepository.saveAll(orderItems);
+
+		orderItems = orderItemRepository.saveAll(orderItems);
 
 		cart.getCartItems().forEach(item -> {
-			int quantity = item.getQuantity();
+			Integer quantity = item.getQuantity();
 			Product product = item.getProduct();
 
+			// Reduce stock quantity
 			product.setQuantity(product.getQuantity() - quantity);
-			this.productRepository.save(product);
 
-			this.cartService.deleteProductFromCart(cart.getCartId(), item.getProduct().getProductId());
+			// Save product back to the database
+			productRepository.save(product);
+
+			// Remove items from cart
+			cartService.deleteProductFromCart(cart.getCartId(), item.getProduct().getProductId());
 		});
 
 		OrderDTO orderDTO = modelMapper.map(savedOrder, OrderDTO.class);
-		orderItems.forEach(item -> orderDTO.getOrederItems().add(modelMapper.map(item, OrderItemDTO.class)));
-		orderDTO.setAddressId(addressId);
+		if (orderDTO.getOrderItems() == null) {
+			orderDTO.setOrderItems(new ArrayList<>()); // Ensure the list is initialized
+		}
+		 orderItems.forEach(item -> {
+	            OrderItemDTO orderItemDTO = modelMapper.map(item, OrderItemDTO.class);
+	            orderItemDTO.setQuantity(item.getQuantity()); // Ensure ordered quantity is set
+
+	            ProductDTO productDTO = modelMapper.map(item.getProduct(), ProductDTO.class);
+	            productDTO.setQuantity(item.getQuantity()); // Set the ordered quantity
+	            orderItemDTO.setProduct(productDTO);
+	            
+	            orderDTO.getOrderItems().add(orderItemDTO);
+	        });
 		return orderDTO;
 	}
-
 }

@@ -35,7 +35,7 @@ public class ProductDTO {
 	private double discount;
 	
 	@Min(value = 1)
-	private int quantity;
+	private Integer quantity;
 	private double specialPrice;
 
 }

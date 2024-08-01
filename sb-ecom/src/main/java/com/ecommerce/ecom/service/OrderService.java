@@ -4,7 +4,8 @@ import com.ecommerce.ecom.dto.OrderDTO;
 
 public interface OrderService {
 
-	OrderDTO placeOrder(String emailId, String paymentMethod, Long addressId, String pgName, String pgPaymentId,
+	
+	OrderDTO placeOrder(String emailId, Long addressId, String paymentMethod, String pgName, String pgPaymentId,
 			String pgStatus, String pgResponseMessage);
 
 	
