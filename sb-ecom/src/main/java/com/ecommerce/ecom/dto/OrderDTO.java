@@ -19,6 +19,6 @@ public class OrderDTO {
 	private String orderStatus;
 	private PaymentDTO payment;
 	private List<OrderItemDTO> orederItems;
-	private AddressDTO address;
+	private Long addressId;
 
 }

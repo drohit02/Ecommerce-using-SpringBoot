@@ -21,38 +21,37 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class Address {
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long addressId;
-	
-	@NotBlank
-	@Size(min = 5,message = "Street name must be atleast 5 charachers")
-	private String street;
-	
-	@NotBlank
-	@Size(min = 5,message = "Street name must be atleast 5 charachers")
-	private String buildingName;
-	
-	@NotBlank
-	@Size(min = 5,message = "Street name must be atleast 5 charachers")
-	private String city;
 
-	
-	@NotBlank
-	@Size(min = 5,message = "Street name must be atleast 5 charachers")
-	private String state;
-	
-	@NotBlank
-	@Size(min = 5,message = "Street name must be atleast 5 charachers")
-	private String country;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long addressId;
 
-	@NotNull
-	@Min(value = 6,message = "Street name must be atleast 5 charachers")
-	private int pincode;
+    @NotBlank
+    @Size(min = 5, message = "Street name must be at least 5 characters")
+    private String street;
 
-	@ToString.Exclude
-	@ManyToOne
-	@JoinColumn(name = "user_id")
-	private User user ;
+    @NotBlank
+    @Size(min = 5, message = "Building name must be at least 5 characters")
+    private String buildingName;
+
+    @NotBlank
+    @Size(min = 5, message = "City name must be at least 5 characters")
+    private String city;
+
+    @NotBlank
+    @Size(min = 5, message = "State name must be at least 5 characters")
+    private String state;
+
+    @NotBlank
+    @Size(min = 5, message = "Country name must be at least 5 characters")
+    private String country;
+
+    @NotNull
+    @Min(value = 6, message = "Pincode must be at least 6 characters")
+    private int pincode;
+
+    @ToString.Exclude
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }
